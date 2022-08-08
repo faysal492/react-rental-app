@@ -59,9 +59,10 @@ const Table = () => {
   const [searchString, setSearchString] = useState("");
 
   useEffect(() => {
-    setRentalServices(getRentalServices);
-    setSearchData(getRentalServices);
-  }, []);
+    const rentalServices = getRentalServices();
+    setRentalServices(rentalServices);
+    setSearchData(rentalServices);
+  }, [rentalServices]);
 
   const handleSearch = (value) => {
     const reg = new RegExp(value, "gi");

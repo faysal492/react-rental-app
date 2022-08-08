@@ -1,11 +1,14 @@
 import { Modal, Select, DatePicker, Space } from "antd";
-import React from "react";
+import React, { useState } from "react";
 import PropTypes from "prop-types";
+import _ from "lodash";
 import { getRentalServices } from "../../services/rentalService";
+import { calBetweenDays } from "../../utils/dateFormatter";
 
 const { Option } = Select;
 const { RangePicker } = DatePicker;
 import moment from "moment";
+import ProductInfo from "../productInfo";
 // eslint-disable-next-line arrow-body-style
 const disabledDate = (current) => {
   // Can not select days before today and today
@@ -19,16 +22,33 @@ const BookingModal = ({
   title,
   okText,
   cancelText,
+  onBookingPrice,
 }) => {
   const rentalService = getRentalServices();
+  const [product, setProduct] = useState(null);
+  const [disableButton, setDisableButton] = useState(true);
 
-  const onChange = (value) => {
-    console.log(`selected ${value}`);
+  const handleChange = (value) => {
+    let product = _.find(rentalService, { code: value });
+    let disableStatus = product.minimum_rent_period === 1 ? false : true;
+    setDisableButton(disableStatus);
+    setProduct(product);
   };
 
-  const onSearch = (value) => {
-    console.log("search:", value);
+  const handleRPickerChagne = (_dates, dateStrings) => {
+    const { minimum_rent_period, price } = product;
+    let days = calBetweenDays(dateStrings);
+    if (minimum_rent_period > Number(days)) {
+      setDisableButton(true);
+      alert(`Please book at least ${minimum_rent_period} days`);
+      return;
+    } else {
+      setDisableButton(false);
+    }
+    let total_price = Number(days) * price;
+    onBookingPrice(total_price);
   };
+
   return (
     <Modal
       title={title}
@@ -37,23 +57,32 @@ const BookingModal = ({
       onCancel={onCancel}
       okText={okText}
       cancelText={cancelText}
+      okButtonProps={{
+        disabled: disableButton,
+      }}
     >
       <Select
-        showSearch
         placeholder="Select a product"
         optionFilterProp="children"
-        onChange={onChange}
-        onSearch={onSearch}
+        onChange={handleChange}
         className="mb-3"
       >
         {rentalService.map((item) => (
           <Option key={item.code} value={item.code}>
-            {item.name}
+            {item.name}/{item.code}
           </Option>
         ))}
       </Select>
+      {product && <ProductInfo product={product} />}
       <Space direction="horizontal">
-        <RangePicker disabledDate={disabledDate} />
+        <RangePicker
+          allowClear={false}
+          disabled={product ? false : true}
+          disabledDate={disabledDate}
+          onChange={(dates, dateStrings) =>
+            handleRPickerChagne(dates, dateStrings)
+          }
+        />
       </Space>
     </Modal>
   );
@@ -66,6 +95,7 @@ BookingModal.propTypes = {
   title: PropTypes.string,
   okText: PropTypes.string,
   cancelText: PropTypes.string,
+  onBookingPrice: PropTypes.func.isRequired,
 };
 
 BookingModal.defaultProps = {

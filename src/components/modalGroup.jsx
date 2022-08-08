@@ -11,6 +11,7 @@ const ModalGroup = () => {
   const [isBCModalVisible, setIsBCModalVisible] = useState(false);
   const [isRModalVisible, setIsRModalVisible] = useState(false);
   const [isRCModalVisible, setIsRCModalVisible] = useState(false);
+  const [bookingPrice, setBookingPrice] = useState(0);
 
   const handleBooking = () => {
     setIsBModalVisible(true);
@@ -19,6 +20,10 @@ const ModalGroup = () => {
   const handleBookingOk = () => {
     setIsBModalVisible(false);
     setIsBCModalVisible(true);
+  };
+
+  const handleBookingPrice = (price) => {
+    setBookingPrice(price);
   };
 
   const handleBookingCancel = () => {
@@ -53,7 +58,7 @@ const ModalGroup = () => {
   return (
     <React.Fragment>
       <div className="float-right mb-4">
-        <Button className="mr-4" onClick={handleBooking} size="middle">
+        <Button className="mr-2" onClick={handleBooking} size="middle">
           Book
         </Button>
         <Button onClick={handleReturn} size="middle">
@@ -64,11 +69,13 @@ const ModalGroup = () => {
         visible={isBModalVisible}
         onOk={handleBookingOk}
         onCancel={handleBookingCancel}
+        onBookingPrice={(price) => handleBookingPrice(price)}
       />
       <BookingConfirmModal
         visible={isBCModalVisible}
         onOk={handleBookingConfirmOk}
         onCancel={handleBookingConfirmCancel}
+        bookingPrice={bookingPrice}
       />
       <ReturnModal
         visible={isRModalVisible}
