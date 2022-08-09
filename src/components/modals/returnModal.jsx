@@ -1,7 +1,10 @@
 import { Modal, Select, Input } from "antd";
-import React from "react";
+import React, { useState } from "react";
+
 import PropTypes from "prop-types";
+import _ from "lodash";
 import { getRentalServices } from "../../services/rentalService";
+import ProductInfo from "../productInfo";
 
 const { Option } = Select;
 
@@ -14,14 +17,17 @@ const ReturnModal = ({
   cancelText,
 }) => {
   const rentalService = getRentalServices();
+  const [product, setProduct] = useState(null);
 
-  const onChange = (value) => {
-    console.log(`selected ${value}`);
+  const handleChange = (value) => {
+    let product = _.find(rentalService, { code: value });
+    setProduct(product);
   };
 
-  const onSearch = (value) => {
-    console.log("search:", value);
+  const handleMilage = (mileage) => {
+    console.log(mileage, "mileage");
   };
+
   return (
     <Modal
       title={title}
@@ -32,22 +38,23 @@ const ReturnModal = ({
       cancelText={cancelText}
     >
       <Select
-        showSearch
+        showSearch={false}
         placeholder="Select a product"
         optionFilterProp="children"
-        onChange={onChange}
-        onSearch={onSearch}
+        onChange={handleChange}
         className="mb-3"
       >
         {rentalService.map((item) => (
           <Option key={item.code} value={item.code}>
-            {item.name}
+            {item.name}/{item.code}
           </Option>
         ))}
       </Select>
+      {product && <ProductInfo product={product} />}
+
       <Input
         placeholder="Used mileage"
-        onChange={() => console.log("basic uses test")}
+        onChange={(e) => handleMilage(e.target.value)}
       />
     </Modal>
   );
